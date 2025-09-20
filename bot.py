@@ -31,11 +31,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     q_emb = np.array(resp.data[0].embedding).astype("float32").reshape(1, -1)
 
-    D, I = index.search(q_emb, k=2)
+    D, I = index.search(q_emb, k=10)
     retrieved = [chunks[i] for i in I[0]]
+    distances = [distance for distance in D[0]]
 
     context_text = "\n\n".join(
-        [f"{c['book']} {c['chapter']}:{c['verse']} → {c['text']}" for c in retrieved]
+        [f"{distances[i]} - {c['book']} {c['chapter']}:{c['verse']} → {c['text']}" for i, c in enumerate(retrieved)]
     )
 
     prompt = f"""Sei un assistente che risponde usando brevi citazioni (massimo 1-2 frasi)
@@ -53,14 +54,37 @@ citazione breve (referenza)
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {'role': 'system', 'content': 'Rispondi con il versetto del libro più pertinente alla domanda.'},
-            {'role': 'user', 'content': query},
+            {'role': 'system', 'content': 'Rispondi con il versetto del libro più pertinente alla domanda. Rispondi con il versetto per intero. '},
+            {'role': 'user', 'content': prompt},
         ],
         temperature=0,
     )
 
     reply = completion.choices[0].message.content
+    # reply = best_result
     await update.message.reply_text(reply)
+    
+async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.inline_query.query
+    if not query:
+        return
+    
+    
+
+    # Perform the same FAISS + LLM retrieval
+    result_text = f"Result for: {query}"  # (Replace with actual retrieval)
+
+    results = [
+        InlineQueryResultArticle(
+            id=str(uuid.uuid4()),
+            title="Book answer",
+            input_message_content=InputTextMessageContent(result_text)
+        )
+    ]
+
+    await update.inline_query.answer(results, cache_time=1)
+    
+
 
 def main():
     app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()

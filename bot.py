@@ -128,7 +128,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.UpdateType.CHOSEN_INLINE_RESULT, handle_message))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.VIA_BOT, handle_message))
     app.add_handler(InlineQueryHandler(inline_query))
     app.run_polling()
 

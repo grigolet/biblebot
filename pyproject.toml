@@ -1,0 +1,18 @@
+[project]
+name = "biblebot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.13.5",
+    "ebooklib>=0.19",
+    "faiss-cpu>=1.12.0",
+    "lxml>=6.0.1",
+    "openai>=1.108.1",
+    "pypdf>=6.0.0",
+    "python-telegram-bot>=22.4",
+    "load_dotenv==0.1.0",
+    "tqdm>=4.67.1",
+    "langchain[openai]>=0.3.27",
+]

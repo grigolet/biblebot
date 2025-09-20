@@ -3,19 +3,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+# Install system dependencies and uv
+RUN apt-get update && apt-get install -y build-essential curl && rm -rf /var/lib/apt/lists/*
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:$PATH"
 
-# Copy requirements and install
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy all code
+# Copy project files
+COPY pyproject.toml uv.lock ./
 COPY . .
+
+# Install dependencies with uv
+RUN uv sync --frozen
 
 # Set environment variables (override with .env or at runtime)
 ENV OPENAI_API_KEY=""
 ENV TELEGRAM_BOT_TOKEN=""
 
 # Entrypoint
-CMD ["python", "bot.py"]
+CMD ["uv", "run", "python", "bot.py"]
